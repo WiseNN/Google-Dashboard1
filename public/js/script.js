@@ -8,8 +8,10 @@
   // Set a callback to run when the Google Visualization API is loaded.
   google.charts.setOnLoadCallback(drawDashboard);
 
+  //create dashboard variable
   var dashboard;
 
+  //initialize all controls and charts  ** WILL NOT DISPLAY CHART **
   function drawDashboard() 
   {
   	debugger;
@@ -17,7 +19,8 @@
 	  	dashboard = new google.visualization.Dashboard(document.getElementById('dashboard_div'));
 
 
-	    var donutRangeSlider = new google.visualization.ControlWrapper({
+	    //create control to filter numeric ranges
+	    var numberRangeSlider = new google.visualization.ControlWrapper({
     'controlType': 'NumberRangeFilter',
     'containerId': 'filter_div',
     options: {
@@ -43,11 +46,11 @@
 	      	title: 'Vehicle Type'
 	      }
 	},
-    // The pie chart will use the columns 'Name' and 'Donuts eaten'
-    // out of all the available ones.
+	//column 3 will be shown a filtered view, based on column 0
     view: {'columns': [3, 0]}
   });
 
+	//chart range filter does not seem to be working
 	  // var chartRangeFilterControl = new google.visualization.ControlWrapper({
 	  // 	'chartType': 'ChartRangeFilter',
 	  // 	'containerId': 'range_filter',
@@ -56,7 +59,8 @@
 	  // 	}
 	  // });
 
-	   var control = new google.visualization.ControlWrapper({
+
+	   var stringFilterControl = new google.visualization.ControlWrapper({
       controlType: 'StringFilter',
       containerId: 'range_filter',
       options: {
@@ -98,12 +102,11 @@
 	  	'containerId': 'donut_chart',
 	  	'view': {'columns': [2,4,1]},
 	  	options: {
-	  		  // seriesType: 'bars',
-      	// 	series: {5: {type: 'line'}}
 	      	animation: {
 	      		duration: 500,
 	      		easing: 'inAndout'
 	      	},
+	      //chart positioning
 	      	// chartArea: {
 	      	// 	left: ,
 	      	// 	right: ,
@@ -116,30 +119,24 @@
 	  });
 
 
+	 // Bindings
+	 // --------
+	 // numberRangeSlider --> will change display of pieChart
+	 // stringFilterControl --> will change display of comboChart
+	 // stringFilterControl --> will change display of sankeyChart
+	 // numberRangeSlider --> will change value of stringFilterControl
+	 // stringFilterControl --> will change display of pieChart
 
-
-
-	 //   var data = google.visualization.arrayToDataTable([
-  //   ['Name', 'Gender', 'Age', 'Donuts eaten'],
-  //   ['Michael' , 'Male', 12, 5],
-  //   ['Elisa', 'Female', 20, 7],
-  //   ['Robert', 'Male', 7, 3],
-  //   ['John', 'Male', 54, 2],
-  //   ['Jessica', 'Female', 22, 6],
-  //   ['Aaron', 'Male', 3, 1],
-  //   ['Margareth', 'Female', 42, 8]
-  // ]);
-
-
-	    // 'pieChart' will update whenever you interact with 'donutRangeSlider'
-  // to match the selected range.
-  dashboard.bind(donutRangeSlider, pieChart).bind(control, comboChart)
-  .bind(control,sankeyChart).bind(donutRangeSlider, control).bind(control, pieChart);
-  
-
-  // dashboard.draw(data);
-
+  	dashboard.bind(numberRangeSlider, pieChart)
+  			 .bind(stringFilterControl, comboChart)
+  			 .bind(stringFilterControl,sankeyChart)
+  			 .bind(numberRangeSlider, stringFilterControl)
+  			 .bind(stringFilterControl, pieChart);
   }
+
+
+
+  /* -------------------------- GOOGLE SHEETS INTEGRATION ------------------------------------*/
 
 
 
@@ -231,35 +228,49 @@
       }
 
       /**
-       * Print the names and majors of students in a sample spreadsheet:
+       * 
+       * 
+       * Prints the first, and third column of your dataset onto the screen.
+       * Used to verify that the data sheet is infact operational.
        * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
        */
-      // function listMajors() {
-      //   gapi.client.sheets.spreadsheets.values.get({
-      //     spreadsheetId: '1yxuh-ZSgdX9zNCiMGdug1otxxpgD0pNwD6oVWNWjJVo',
-      //     range: 'Cars Lab Data!A:F',
-      //   }).then(function(response) {
-      //   	debugger;
-      //     var range = response.result;
-      //     if (range.values.length > 0) {
-      //       appendPre('Name, Major:');
-      //       for (i = 0; i < range.values.length; i++) {
-      //         var row = range.values[i];
-      //         // Print columns A and E, which correspond to indices 0 and 4.
-      //         appendPre(row[0] + ', ' + row[4]);
-      //       }
-      //     } else {
-      //       appendPre('No data found.');
-      //     }
-      //   }, function(response) {
-      //     appendPre('Error: ' + response.result.error.message);
-      //   });
-      // }
+      function listMajors() 
+      {
+        gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: '1yxuh-ZSgdX9zNCiMGdug1otxxpgD0pNwD6oVWNWjJVo',
+          //specify what selection will be return (rows/columns)
+          range: 'Cars Lab Data!A:F',
+        }).then(function(response) {
+        	
+	          var range = response.result;
+	          if (range.values.length > 0) 
+	          {
+	            for (i = 0; i < range.values.length; i++) 
+	            {
+	              var row = range.values[i];
+	              // Print columns A and C, which correspond to indices 0 and 2.
+	              appendPre(row[0] + ', ' + row[2]);
+	            }
+
+	          } 
+	          else 
+	          {
+	            appendPre('No data found.');
+	            alert('No data found');
+	          }
+        },
+         function(response) {
+          appendPre('Error: ' + response.result.error.message);
+        });
+      }
 
 
+      //called when the google sheets client has been initialized
+      // used to pipe the data from google sheets into google charts
       function updateDataTable()
       {
-      	 {
+      	 
+        
         gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: '1yxuh-ZSgdX9zNCiMGdug1otxxpgD0pNwD6oVWNWjJVo',
           range: 'Cars Lab Data!A:F',
@@ -268,7 +279,7 @@
           
           var dataAry = response.result.values;
           
-          //create labels objects 
+          //create labels objects to enforce data types in the columns
           dataAry[0] = [
           	 {label: dataAry[0][0], type: 'number'},
           	 {label: dataAry[0][1], type: 'number'},
@@ -278,7 +289,10 @@
       	     {label: dataAry[0][5], type: 'string'}
           ]
 
-
+          //if there is data, 
+          //1. add column labels & data types
+          //2. convert 2D array into google charts DataTable
+          //3. draw dashboard on the screem
           if (dataAry.length > 0) 
           {
           	
@@ -286,39 +300,28 @@
           	{
           		//turn price string into number
           		dataAry[i][0] = parseInt(dataAry[i][0].replace('$','').replace(',',''));
-
-
-
-    //       		// get price and make cell...
-    //       		var temp0 = dataAry[i][0];
-				// var temp2 = dataAry[i][2];
-
-
-
-
-				// //...then swap
-				// dataAry[i][2] = temp0;
-				// dataAry[i][0] = temp2;
-
           	}
 		debugger;
 		
 
+			//convert 2D array to a google charts DataTable 
            	var data = google.visualization.arrayToDataTable(dataAry);
+            
+            //draw the dashboard on the screen
             dashboard.draw(data);
           } 
-          else 
+          else  //if no data, alert user that nothing will be displayed
           {
-          	alert("There is no data to load")
+          	alert("There is no data to load, charts will not be displayed.")
           }
-        }, function(response) {
+        }, function(response) {//show Error on alert
         	alert('Error: ' + response.result.error.message);
           
         });
       }
 
 
-      }
+      
 	
 
 
