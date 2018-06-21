@@ -3,29 +3,31 @@
   // Load the Visualization API and the controls package.
   // Packages for all the other charts you need will be loaded
   // automatically by the system.
-  google.charts.load('current', {'packages':['corechart', 'controls']});
+  google.charts.load('current', {'packages':['corechart', 'controls', 'table']});
 
   // Set a callback to run when the Google Visualization API is loaded.
   google.charts.setOnLoadCallback(drawDashboard);
+
+  var dashboard;
 
   function drawDashboard() 
   {
   	debugger;
 	    // Everything is loaded. Assemble your dashboard...
-	  var dashboard = new google.visualization.Dashboard(document.getElementById('dashboard_div'));
+	  	dashboard = new google.visualization.Dashboard(document.getElementById('dashboard_div'));
 
 
 	    var donutRangeSlider = new google.visualization.ControlWrapper({
     'controlType': 'NumberRangeFilter',
     'containerId': 'filter_div',
-    'options': {
-      'filterColumnLabel': 'Donuts eaten',
-      'minValue': 1,
-      'maxValue': 10
+    options: {
+      filterColumnIndex: 0,
+      minValue: 13000,
+      maxValue: 17000
     },
     // Explicitly positions the thumbs at position 3 and 8,
     // out of the possible range of 1 to 10.
-    'state': {'lowValue': 3, 'highValue': 8}
+    'state': {'lowValue': 15000, 'highValue': 16000}
   });
 
 
@@ -33,35 +35,109 @@
 	  var pieChart = new google.visualization.ChartWrapper({
     'chartType': 'PieChart',
     'containerId': 'chart_div',
-    'options': {
-      'width': 300,
-      'height': 300,
-      'title': 'Donuts eaten per person'
-    },
+	options: {
+	      width: 600,
+	      height: 600,
+	      title: 'Used Cars',
+	      hAxis: {
+	      	title: 'Vehicle Type'
+	      }
+	},
     // The pie chart will use the columns 'Name' and 'Donuts eaten'
     // out of all the available ones.
-    'view': {'columns': [0, 3]}
+    view: {'columns': [3, 0]}
   });
 
+	  // var chartRangeFilterControl = new google.visualization.ControlWrapper({
+	  // 	'chartType': 'ChartRangeFilter',
+	  // 	'containerId': 'range_filter',
+	  // 	'options': {
+	  // 		'filterColumnLabel': 'Make'
+	  // 	}
+	  // });
+
+	   var control = new google.visualization.ControlWrapper({
+      controlType: 'StringFilter',
+      containerId: 'range_filter',
+      options: {
+        filterColumnIndex: 5,
+        matchType: 'any',
+        caseSensitive: false,
+        ui:{
+        	label: 'Vehicle Type',
+        	labelSeparator: ':'
+        }
+      }
+    });
+
+	  var comboChart = new google.visualization.ChartWrapper({
+	  	'chartType': 'ComboChart',
+	  	'containerId': 'line_chart',
+	  	'view': {'columns': [5,0]},
+	  	options: {
+	  		  // seriesType: 'bars',
+      	// 	series: {5: {type: 'line'}}
+	      	animation: {
+	      		duration: 500,
+	      		easing: 'inAndout'
+	      	},
+	      	// chartArea: {
+	      	// 	left: ,
+	      	// 	right: ,
+	      	// 	top: ,
+	      	// 	bottom
+	      	// }
+
+	  	}
+
+	  });
+
+	  var sankeyChart = new google.visualization.ChartWrapper({
+
+	  	'chartType': 'Sankey',
+	  	'containerId': 'donut_chart',
+	  	'view': {'columns': [2,4,1]},
+	  	options: {
+	  		  // seriesType: 'bars',
+      	// 	series: {5: {type: 'line'}}
+	      	animation: {
+	      		duration: 500,
+	      		easing: 'inAndout'
+	      	},
+	      	// chartArea: {
+	      	// 	left: ,
+	      	// 	right: ,
+	      	// 	top: ,
+	      	// 	bottom
+	      	// }
+
+	  	}
+
+	  });
 
 
-	   var data = google.visualization.arrayToDataTable([
-    ['Name', 'Gender', 'Age', 'Donuts eaten'],
-    ['Michael' , 'Male', 12, 5],
-    ['Elisa', 'Female', 20, 7],
-    ['Robert', 'Male', 7, 3],
-    ['John', 'Male', 54, 2],
-    ['Jessica', 'Female', 22, 6],
-    ['Aaron', 'Male', 3, 1],
-    ['Margareth', 'Female', 42, 8]
-  ]);
+
+
+
+	 //   var data = google.visualization.arrayToDataTable([
+  //   ['Name', 'Gender', 'Age', 'Donuts eaten'],
+  //   ['Michael' , 'Male', 12, 5],
+  //   ['Elisa', 'Female', 20, 7],
+  //   ['Robert', 'Male', 7, 3],
+  //   ['John', 'Male', 54, 2],
+  //   ['Jessica', 'Female', 22, 6],
+  //   ['Aaron', 'Male', 3, 1],
+  //   ['Margareth', 'Female', 42, 8]
+  // ]);
 
 
 	    // 'pieChart' will update whenever you interact with 'donutRangeSlider'
   // to match the selected range.
-  dashboard.bind(donutRangeSlider, pieChart);
+  dashboard.bind(donutRangeSlider, pieChart).bind(control, comboChart)
+  .bind(control,sankeyChart).bind(donutRangeSlider, control).bind(control, pieChart);
+  
 
-  dashboard.draw(data);
+  // dashboard.draw(data);
 
   }
 
@@ -107,6 +183,8 @@
           updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
           authorizeButton.onclick = handleAuthClick;
           signoutButton.onclick = handleSignoutClick;
+          updateDataTable()
+          
         });
       }
 
@@ -146,6 +224,7 @@
        * @param {string} message Text to be placed in pre element.
        */
       function appendPre(message) {
+   
         var pre = document.getElementById('content');
         var textContent = document.createTextNode(message + '\n');
         pre.appendChild(textContent);
@@ -157,9 +236,10 @@
        */
       function listMajors() {
         gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms',
-          range: 'Class Data!A2:E',
+          spreadsheetId: '1yxuh-ZSgdX9zNCiMGdug1otxxpgD0pNwD6oVWNWjJVo',
+          range: 'Cars Lab Data!A:F',
         }).then(function(response) {
+        	debugger;
           var range = response.result;
           if (range.values.length > 0) {
             appendPre('Name, Major:');
@@ -177,6 +257,71 @@
       }
 
 
-      
+      function updateDataTable()
+      {
+      	 {
+        gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: '1yxuh-ZSgdX9zNCiMGdug1otxxpgD0pNwD6oVWNWjJVo',
+          range: 'Cars Lab Data!A:F',
+        }).then(function(response) {
+        	debugger;
+          
+          var dataAry = response.result.values;
+          
+          //create labels objects 
+          dataAry[0] = [
+          	 {label: dataAry[0][0], type: 'number'},
+          	 {label: dataAry[0][1], type: 'number'},
+          	 {label: dataAry[0][2], type: 'string'},
+          	 {label: dataAry[0][3], type: 'string'},
+      	     {label: dataAry[0][4], type: 'string'},
+      	     {label: dataAry[0][5], type: 'string'}
+          ]
+
+
+          if (dataAry.length > 0) 
+          {
+          	
+          	for(var i=1;i<dataAry.length;i++)
+          	{
+          		//turn price string into number
+          		dataAry[i][0] = parseInt(dataAry[i][0].replace('$','').replace(',',''));
+
+
+
+    //       		// get price and make cell...
+    //       		var temp0 = dataAry[i][0];
+				// var temp2 = dataAry[i][2];
+
+
+
+
+				// //...then swap
+				// dataAry[i][2] = temp0;
+				// dataAry[i][0] = temp2;
+
+          	}
+		debugger;
+		
+
+           	var data = google.visualization.arrayToDataTable(dataAry);
+            dashboard.draw(data);
+          } 
+          else 
+          {
+          	alert("There is no data to load")
+          }
+        }, function(response) {
+        	alert('Error: ' + response.result.error.message);
+          
+        });
+      }
+
+
+      }
+	
+
+
+
 
 
