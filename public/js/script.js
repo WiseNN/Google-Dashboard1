@@ -23,11 +23,11 @@
     options: {
       filterColumnIndex: 0,
       minValue: 13000,
-      maxValue: 17000
+      maxValue: 15000
     },
     // Explicitly positions the thumbs at position 3 and 8,
     // out of the possible range of 1 to 10.
-    'state': {'lowValue': 15000, 'highValue': 16000}
+    'state': {'lowValue': 13383, 'highValue': 13630}
   });
 
 
@@ -196,7 +196,7 @@
         if (isSignedIn) {
           authorizeButton.style.display = 'none';
           signoutButton.style.display = 'block';
-          listMajors();
+          
         } else {
           authorizeButton.style.display = 'block';
           signoutButton.style.display = 'none';
@@ -234,27 +234,27 @@
        * Print the names and majors of students in a sample spreadsheet:
        * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
        */
-      function listMajors() {
-        gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: '1yxuh-ZSgdX9zNCiMGdug1otxxpgD0pNwD6oVWNWjJVo',
-          range: 'Cars Lab Data!A:F',
-        }).then(function(response) {
-        	debugger;
-          var range = response.result;
-          if (range.values.length > 0) {
-            appendPre('Name, Major:');
-            for (i = 0; i < range.values.length; i++) {
-              var row = range.values[i];
-              // Print columns A and E, which correspond to indices 0 and 4.
-              appendPre(row[0] + ', ' + row[4]);
-            }
-          } else {
-            appendPre('No data found.');
-          }
-        }, function(response) {
-          appendPre('Error: ' + response.result.error.message);
-        });
-      }
+      // function listMajors() {
+      //   gapi.client.sheets.spreadsheets.values.get({
+      //     spreadsheetId: '1yxuh-ZSgdX9zNCiMGdug1otxxpgD0pNwD6oVWNWjJVo',
+      //     range: 'Cars Lab Data!A:F',
+      //   }).then(function(response) {
+      //   	debugger;
+      //     var range = response.result;
+      //     if (range.values.length > 0) {
+      //       appendPre('Name, Major:');
+      //       for (i = 0; i < range.values.length; i++) {
+      //         var row = range.values[i];
+      //         // Print columns A and E, which correspond to indices 0 and 4.
+      //         appendPre(row[0] + ', ' + row[4]);
+      //       }
+      //     } else {
+      //       appendPre('No data found.');
+      //     }
+      //   }, function(response) {
+      //     appendPre('Error: ' + response.result.error.message);
+      //   });
+      // }
 
 
       function updateDataTable()
