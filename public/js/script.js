@@ -5,6 +5,7 @@
   // automatically by the system.
   google.charts.load('current', {'packages':['corechart', 'controls', 'table']});
 
+    
   // Set a callback to run when the Google Visualization API is loaded.
   google.charts.setOnLoadCallback(drawDashboard);
 
@@ -265,19 +266,13 @@
       }
 
 
-      //called when the google sheets client has been initialized
-      // used to pipe the data from google sheets into google charts
-      function updateDataTable()
-      {
-      	 
-        
-        gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: '1yxuh-ZSgdX9zNCiMGdug1otxxpgD0pNwD6oVWNWjJVo',
-          range: 'Cars Lab Data!A:F',
-        }).then(function(response) {
-        	debugger;
-          
-          var dataAry = response.result.values;
+
+    function loadData(result)
+    {
+        debugger;
+        console.log("Data: " + JSON.stringify(result) + "\nStatus: " + status);
+               debugger;
+               var dataAry = result["values"];
           
           //create labels objects to enforce data types in the columns
           dataAry[0] = [
@@ -314,11 +309,73 @@
           {
           	alert("There is no data to load, charts will not be displayed.")
           }
-        }, function(response) {//show Error on alert
-        	alert('Error: ' + response.result.error.message);
+        
+
+    }
+
+      //called when the google sheets client has been initialized
+      // used to pipe the data from google sheets into google charts
+      function updateDataTable()
+      {
+      	 
+        
+//        gapi.client.sheets.spreadsheets.values.get({
+//          spreadsheetId: '1yxuh-ZSgdX9zNCiMGdug1otxxpgD0pNwD6oVWNWjJVo',
+//          range: 'Cars Lab Data!A:F',
+//        }).then(function(response) {
+//        	debugger;
+//          
+//          var dataAry = response.result.values;
+//          
+//          //create labels objects to enforce data types in the columns
+//          dataAry[0] = [
+//          	 {label: dataAry[0][0], type: 'number'},
+//          	 {label: dataAry[0][1], type: 'number'},
+//          	 {label: dataAry[0][2], type: 'string'},
+//          	 {label: dataAry[0][3], type: 'string'},
+//      	     {label: dataAry[0][4], type: 'string'},
+//      	     {label: dataAry[0][5], type: 'string'}
+//          ]
+//
+//          //if there is data, 
+//          //1. add column labels & data types
+//          //2. convert 2D array into google charts DataTable
+//          //3. draw dashboard on the screem
+//          if (dataAry.length > 0) 
+//          {
+//          	
+//          	for(var i=1;i<dataAry.length;i++)
+//          	{
+//          		//turn price string into number
+//          		dataAry[i][0] = parseInt(dataAry[i][0].replace('$','').replace(',',''));
+//          	}
+//		debugger;
+//		
+//
+//			//convert 2D array to a google charts DataTable 
+//           	var data = google.visualization.arrayToDataTable(dataAry);
+//            
+//            //draw the dashboard on the screen
+//            dashboard.draw(data);
+//          } 
+//          else  //if no data, alert user that nothing will be displayed
+//          {
+//          	alert("There is no data to load, charts will not be displayed.")
+//          }
+//        }, function(response) {//show Error on alert
+//        	alert('Error: ' + response.result.error.message);
+//          
+//        });
+          debugger;
+           jQuery.get("https://sheets.googleapis.com/v4/spreadsheets/1yxuh-ZSgdX9zNCiMGdug1otxxpgD0pNwD6oVWNWjJVo/values/Cars Lab Data!A:F?key=AIzaSyAstQqkUc1qwREAa6NOCmq46t1TZpgR9eY", function(data, status){
+               debugger;
+            loadData(data);
+          
           
         });
       }
+
+updateDataTable();
 
 
       
